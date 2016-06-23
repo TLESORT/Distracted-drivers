@@ -45,7 +45,7 @@ function GetImageTrainAndTestList(datapath, classes, trainRelativeSize)
 	trainList = {data = {},label = {}}
 	testList = {data = {},label = {}}
 	
-    	
+    	print("classe = tonumber(string.sub(StrClasse, 2))+1 <-- corrrect?")
 
 
 	for i = 1, #classes do
@@ -54,12 +54,13 @@ function GetImageTrainAndTestList(datapath, classes, trainRelativeSize)
 		for j=1, #StrImages do
 			if math.random(1, 100)<= trainRelativeSize then
 				table.insert(trainList.data,StrImages[j])
-				classe = tonumber(string.sub(StrClasse, 2))
+				classe = tonumber(string.sub(StrClasse, 2))+1
 				--table.insert(trainList.label,i)
 				table.insert(trainList.label,classe)
 			else
 				table.insert(testList.data,StrImages[j])
-				table.insert(testList.label,i)
+				classe = tonumber(string.sub(StrClasse, 2))+1
+				table.insert(testList.label,classe)
 			end
 		end
 	end
@@ -167,7 +168,7 @@ function Batch(im_list, lenght, image_width, image_height, indice, Type)
 		return nil
 	end
 	if (indice+1)*lenght>=#im_list.data then	
-		print("too big : (indice+1)*lenght>=#im_list.data  (function batch)")
+		print("indice too big : some images will be seen 2 times for this epoch")
 		start=#im_list.data-lenght
 	else
 		start=lenght*indice+1
@@ -176,6 +177,7 @@ function Batch(im_list, lenght, image_width, image_height, indice, Type)
 	for i = 1, lenght do
 		img = image.load(im_list.data[start+i],3,'byte')
 		img_rsz=image.scale(img,image_width.."x"..image_height)
+		--img_yuv=image.rgb2yuv(img_rsz)
 		struct.data[i]=img_rsz
 		struct.label[i]=im_list.label[start+i]
 	end
@@ -184,18 +186,25 @@ end
 
 function getBatch(im_list, lenght, image_width, image_height, indice, Type)
 	local batch=Batch(im_list, lenght, image_width, image_height, indice, Type)
+	if Type=='TRAIN' then 
+		batch=DataAugmentation(batch,lenght,image_width,image_height, 10, 0.1, 1)
+	end
 	return PreTraitement(batch,lenght)
 end
 
-function getRandomDataTrain(im_list,lenght, im_width, im_height)
-	local train=getRandomBatch(im_list,lenght, im_width, im_height,'TRAIN')
-	return PreTraitement(train,lenght)
-end
-function getRandomDataTest(im_list,lenght, im_width, im_height)
-	local test=getRandomBatch(im_list,lenght, im_width, im_height, 'VALID')
-	return PreTraitement(test,lenght)
+function getRandomData(im_list,lenght, im_width, im_height,Type)
+	local batch=getRandomBatch(im_list,lenght, im_width, im_height,Type)
+	if Type=='TRAIN' then 
+		batch=DataAugmentation(train,lenght,im_width,im_height, 20, 0.1, 10)
+	end
+	return PreTraitement(batch,lenght)
 end
 
+---------------------------------------------------------------------------------------
+-- Function : shuffleDataList(im_list)
+-- Input (im_list): list to shuffle
+-- Output : The previous list after shuffling
+---------------------------------------------------------------------------------------
 function shuffleDataList(im_list)
 	local rand = math.random 
 	local iterations = #im_list.data
@@ -210,26 +219,9 @@ function shuffleDataList(im_list)
 end
 
 
-function getImage(im)
-	
-	Data = {
-	   data = torch.Tensor(1, 3,200,200),-- image_width, image_height),
-	   label = torch.IntTensor(1),
-	   size = function() return 1 end
-		}
-
-	setmetatable(trainData, {__index = function(t, i) 
-                    return {t.data[i], t.label[i]} 
-                end});
-
-	local ima=image.load(im.data,3,'byte')
-	print(ima:size())
-	struct={data=ima,label=im.label}
-	return PreTraitement(struct,1)
-end
 ---------------------------------------------------------------------------------------
 -- Function : PreTraitement(batch,lenght)
--- Input : Batch of images
+-- Input (batch): Batch of images
 -- Input (lenght): lenght of the batch
 -- Output : A batch with a mean and a 1 variance for each channel
 ---------------------------------------------------------------------------------------
@@ -273,5 +265,53 @@ function PreTraitement(batch,lenght)
 	   end
 	end
 	return batch
+end
+---------------------------------------------------------------------------------------
+-- Function : DataAugmentation(batch,lenght,height,width, angle, shift, chance)
+-- Input (batch) : Batch of images
+-- Input (lenght): lenght of the batch
+-- Input (width): width of images
+-- Input (height) : height of images
+-- Input (shift) : max shift applied for the random translatation
+-- Input (chance): Chance for each pixel for being reamplaced by a random other
+-- Output : A batch with new images slightly modified for regularization
+---------------------------------------------------------------------------------------
+function DataAugmentation(batch,lenght,width,height, angle, shift, chance)
+	for i = 1,lenght do
+		-- random rotation
+		angle=(math.random(0,2*angle)-angle)*math.pi/180
+		batch.data[{ i,{},{},{} }] =  image.rotate(batch.data[{ i,{},{},{} }], angle)
+		-- random translation
+		dx=math.random(0,2*shift)-shift
+		dy=math.random(0,2*shift)-shift
+		batch.data[{ i,{},{},{} }] = image.translate(batch.data[{ i,{},{},{} }], dx, dy)
+		-- add random pixel kill
+		batch.data[{ i,{},{},{} }] = randomPixelKill(batch.data[{ i,{},{},{} }],width,height, chance)
+	end
+	return batch
+end
+
+---------------------------------------------------------------------------------------
+-- Function : randomPixelKill(im,width,height, chance)
+-- Input (im) : image
+-- Input (height) : height of images
+-- Input (width): width of images
+-- Input (chance): Chance for each pixel for being reamplaced by a random other (1 for 1% chance to be killed)
+-- Output : A batch with random pixels killed
+---------------------------------------------------------------------------------------
+function randomPixelKill(im,width,height, chance)
+	local channels = {'y','u','v'}
+
+	for c in ipairs(channels) do
+		for i=1,height do
+			for j=1, width do
+				if math.random(0, 100)<chance then
+					im[{ {c},i,j}]=math.random(0,256)
+				end
+			end
+		end
+	end
+	return im
+
 end
 
