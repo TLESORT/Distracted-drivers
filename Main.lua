@@ -13,7 +13,7 @@ require 'printing'
 
 
 function save_model(model,path)
-	path=path or "./Save/model2.t7"
+	path=path or "./Save/SaveModel28.t7"
 	print("Saved at : "..path)
 	model:cuda()
 	parameters, gradParameters = model:getParameters()
@@ -29,15 +29,13 @@ function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_
 	local list_loss_test={}
 	local nbBatch=math.floor(#train_list.data/BatchSize)+1
 	local timer = torch.Timer()
+	local best_loss =100000
 
+	--MaxEpoch=1
+	--nbBatch=1
 	for epochs=0, MaxEpoch do
-		print(" Epochs :  "..epochs)
-		print(nbBatch .. " Batchs per Epochs ")
+		print(" Epochs :  "..epochs.. " - time : "..os.date("%X"))
 		for numBatch=1, nbBatch do	
-			
-			if numBatch%500==0 then
-			 print('Numbatch : '..numBatch.." - time : "..os.date("%X"))
-			 end
 			-- Data ---------------------------------------------------------------
 			trainData=getBatch(train_list, BatchSize,image_width,image_height,numBatch-1,'TRAIN')
 			trainData.data=trainData.data:cuda()
@@ -52,11 +50,17 @@ function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_
 			local visu=criterion:backward(Timnet.output, trainData.label)
 			Timnet:backward(trainData.data, visu)
 			Timnet:updateParameters(LR)
+
+			xlua.progress(numBatch, nbBatch)
 		end 
-		save_model(Timnet,"./Save/Savemodele22.t7")
+		save_model(Timnet,"./Save/Savemodele28.t7")
 		--Testing
 		error_train, loss_train=print_performance(train_list, BatchSize , 					Timnet,criterion, classes, image_width, image_height,"TRAIN")
 		error_test, loss_test=print_performance(test_list, BatchSize , Timnet,criterion, 						classes, image_width, image_height,"VALID")
+
+		if loss_test<best_loss then
+			save_model(Timnet,"./Save/Savemodele28_best.t7")
+		end
 
 
 		table.insert(list_error_train,error_train)
@@ -73,13 +77,13 @@ end
 -- Training Parameters -------------------------------------------------------
 
 local LR=0.01
-local MaxEpoch=10
+local MaxEpoch=15
 local classes={"c0","c1","c2","c3","c4","c5","c6","c7","c8","c9"}
 local datapath="/home/lesort/TrainTorch/Kaggle/imgs/train/"
 local BatchSize=5
 local image_width=200
 local image_height=200
-local save_name='./Save/model2.t7'
+local save_name='./Save/Savemodele28.t7'
 local reload=false
 
 --!--local MaxBatch=1
@@ -87,10 +91,10 @@ local reload=false
 ------------------------------------------------------------------------------
 
 if reload==true then
-	Timnet = torch.load(modele_name):double()
+	Timnet = torch.load(save_name):double()
 	print('Timnet\n' .. Timnet:__tostring());
 else
-	modele_file='./models/modele2'
+	modele_file='./models/nin'
 	print("------------------------------------------------------------------------------")
 	print("------------------------------------------------------------------------------")
 	print("-----------------------------"..modele_file.."--------------------------------")
@@ -99,6 +103,8 @@ else
 	require(modele_file)
 	Timnet = getNet(image_width,image_height)
 end
+
+collectgarbage()
 Timnet=Timnet:cuda()
 criterion = nn.ClassNLLCriterion() -- a negative log-likelihood for multi-class classification
 criterion = criterion:cuda()
@@ -114,8 +120,5 @@ testList=shuffleDataList(testList)
 -- Epoch Training -------------------------------------------------------
 train_epochs(trainList, testList, BatchSize,classes,image_width,image_height, criterion, Timnet, LR, MaxEpoch)
 
-
----- Save Model ---------------------------------------------------------------------
---save_model(Timnet)
--------------------------------------------------------------------------------------
+--error_train, loss_train=print_performance(trainList, BatchSize , 					Timnet,criterion, classes, image_width, image_height,"TRAIN")
 

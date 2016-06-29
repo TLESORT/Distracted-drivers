@@ -20,13 +20,13 @@ im_width=200
 im_height=200
 lenght=1
 im_list=trainList
-testData0=getRandomDataTest(im_list,lenght, im_width, im_height)
+testData0=getRandomData(im_list,lenght, im_width, im_height)
 
 
 local classes1={"c8"}
 trainList, testList=GetImageTrainAndTestList(datapath, classes1, 100)
 im_list=trainList
-testData1=getRandomDataTest(im_list,lenght, im_width, im_height)
+testData1=getRandomData(im_list,lenght, im_width, im_height)
 --[[
 correct = 0
 for i=1,testData.label:size(1) do

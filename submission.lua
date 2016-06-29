@@ -68,7 +68,6 @@ function Image(im_list, image_width, image_height, indice)
 	local image_width= image_width or 100
 	local image_height= image_height or 100
 	local indice=indice or 1
-	local datapath="/home/lesort/TrainTorch/Kaggle/imgs/train/"
 
 	-- create train set structure:
 	Data = {
@@ -85,13 +84,16 @@ function Image(im_list, image_width, image_height, indice)
 	return Data
 end
 pathlist,filelist=getfile()
-Timnet=torch.load('model.t7'):double()
+Timnet=torch.load('./Save/Savemodele22.t7'):double()
 Timnet=Timnet:cuda()
 
 --csv=csvigo.load({path = "./submission.csv"})
-local file = io.open("submission.csv", "a+")
+local file = io.open("test", "a+")
 file:write("img,c0,c1,c2,c3,c4,c5,c6,c7,c8,c9\n")
 for i=1,#pathlist do
+	if numBatch%500==0 then
+		print('NumImage : '..i.." - time : "..os.date("%X"))
+	end
 	im=Image(pathlist,200,200,i)
 	im.data=PreTraining(im).data:cuda()
 	--image.display{im.data, zoom=4}

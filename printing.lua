@@ -37,10 +37,11 @@ function print_performance(im_list, Batchsize, net, criterion, classes, image_wi
 	local correct = 0
 	local nbBatch=math.floor(#im_list.label/Batchsize)+1
 	local class_Accuracy = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	local class_tot = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	local errors_tot=0
 	local loss_tot=0
 
-	print(nbBatch.. " Test Batchs ")
+	print("Performance : "..nbBatch.. " Test Batchs - time : "..os.date("%X"))
 	for i=1, nbBatch do
 	    local Data=getBatch(im_list, Batchsize, image_width, image_height, i-1, Type)
 	    Data.data= Data.data:cuda()
@@ -52,16 +53,20 @@ function print_performance(im_list, Batchsize, net, criterion, classes, image_wi
 	    loss_tot=loss_tot+loss
 	    --!--local confidences, indices = torch.sort(prediction, true)  --true -> sort in descending order
 	    errors, class_Accuracy=count_error(groundtruth, prediction,class_Accuracy)
+	    for j=1, Batchsize do
+	    	class_tot[groundtruth[j]]=class_tot[groundtruth[j]]+1
+	    end
 	    errors_tot=errors_tot+errors
+	    xlua.progress(i, nbBatch)
 	end
 	print("----------------"..Type.."-----------------")
 	print('loss_tot '.. loss_tot/nbBatch) 
 	print("nb errors : ".. errors_tot)
 	print("errors : "..100*errors_tot/(nbBatch*Batchsize).. ' % ')
-	--print("Classe Accuracy: ")
-	--for i=1,#classes do
-	--    print(classes[i], 100*class_Accuracy[i]/(nbBatch*Batchsize) .. ' %')
-	--end
+	print("Classe Accuracy: ")
+	for i=1,#classes do
+	    print(classes[i], 100*class_Accuracy[i]/class_tot[i] .. ' %	   sur : '..class_tot[i])
+	end
 	print("-------------------------------------")
 
 	return 100*errors_tot/(nbBatch*Batchsize), loss_tot/nbBatch

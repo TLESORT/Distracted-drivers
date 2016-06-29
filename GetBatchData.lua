@@ -286,7 +286,7 @@ function DataAugmentation(batch,lenght,width,height, angle, shift, chance)
 		dy=math.random(0,2*shift)-shift
 		batch.data[{ i,{},{},{} }] = image.translate(batch.data[{ i,{},{},{} }], dx, dy)
 		-- add random pixel kill
-		batch.data[{ i,{},{},{} }] = randomPixelKill(batch.data[{ i,{},{},{} }],width,height, chance)
+		batch.data[{ i,{},{},{} }] = randomPixelKillAndNoise(batch.data[{ i,{},{},{} }],width,height, chance)
 	end
 	return batch
 end
@@ -299,15 +299,19 @@ end
 -- Input (chance): Chance for each pixel for being reamplaced by a random other (1 for 1% chance to be killed)
 -- Output : A batch with random pixels killed
 ---------------------------------------------------------------------------------------
-function randomPixelKill(im,width,height, chance)
+function randomPixelKillAndNoise(im,width,height, chance)
 	local channels = {'y','u','v'}
 
 	for c in ipairs(channels) do
 		for i=1,height do
 			for j=1, width do
 				if math.random(0, 100)<chance then
-					im[{ {c},i,j}]=math.random(0,256)
+					im[{ {c},i,j}]=math.random(0,255)
 				end
+				Noise=math.random(-5, 5)
+				im[{ {c},i,j}]=im[{ {c},i,j}]+Noise
+				if im[{ {c},i,j}][1]>255 then im[{ {c},i,j}]=255 end
+				if im[{ {c},i,j}][1]<0 then im[{ {c},i,j}]=0 end
 			end
 		end
 	end
