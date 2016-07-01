@@ -13,7 +13,7 @@ require 'printing'
 
 
 function save_model(model,path)
-	path=path or "./Save/SaveModel28.t7"
+	path=path or "./Save/SaveModel1.t7"
 	print("Saved at : "..path)
 	model:cuda()
 	parameters, gradParameters = model:getParameters()
@@ -53,7 +53,7 @@ function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_
 
 			xlua.progress(numBatch, nbBatch)
 		end 
-		save_model(Timnet,"./Save/Savemodele28.t7")
+		save_model(Timnet,"./Save/Savemodele1.t7")
 		--Testing
 		error_train, loss_train=print_performance(train_list, BatchSize , 					Timnet,criterion, classes, image_width, image_height,"TRAIN")
 		error_test, loss_test=print_performance(test_list, BatchSize , Timnet,criterion, 						classes, image_width, image_height,"VALID")
@@ -80,14 +80,14 @@ local LR=0.01
 local MaxEpoch=15
 local classes={"c0","c1","c2","c3","c4","c5","c6","c7","c8","c9"}
 local datapath="/home/lesort/TrainTorch/Kaggle/imgs/train/"
-local PPdatapath="/home/lesort/TrainTorch/Kaggle/PrepocessedData/Train/epoch"
-local TestPPdatapath="/home/lesort/TrainTorch/Kaggle/PrepocessedData/Test"
+local PPdatapath="/home/lesort/TrainTorch/Kaggle/PreprocessedData/Train/epoch"
+local TestPPdatapath="/home/lesort/TrainTorch/Kaggle/PreprocessedData/Test/"
 local BatchSize=5
 local image_width=200
 local image_height=200
 local save_name='./Save/Savemodele28.t7'
 local reload=false
-local usePreprocessedData=true
+local usePreprocessedData=false
 
 --!--local MaxBatch=1
 --!--local Testsize=1000
@@ -97,7 +97,7 @@ if reload==true then
 	Timnet = torch.load(save_name):double()
 	print('Timnet\n' .. Timnet:__tostring());
 else
-	modele_file='./models/nin'
+	modele_file='./models/mini_model'
 	print("------------------------------------------------------------------------------")
 	print("------------------------------------------------------------------------------")
 	print("-----------------------------"..modele_file.."--------------------------------")
@@ -119,7 +119,7 @@ local csv="/home/lesort/TrainTorch/Kaggle/driver_imgs_list.csv"
 local trainList={}
 local testList={}
 if usePreprocessedData then
-	trainList, testList=GetTestAndTrain(csv,PPdatapath.."0", 80,TestPPdatapath )
+	trainList, testList=GetTestAndTrain(csv,PPdatapath.."0/", 80,TestPPdatapath )
 else
 	trainList, testList=GetTestAndTrain(csv,datapath, 80)
 end

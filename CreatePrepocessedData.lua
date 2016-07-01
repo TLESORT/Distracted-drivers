@@ -20,7 +20,7 @@ local trainList, testList=GetTestAndTrain(csv,datapath, 80)
 train_list=shuffleDataList(trainList)
 test_list=shuffleDataList(testList)
 
-local MaxEpoch=10
+local MaxEpoch=1
 local BatchSize=5
 local image_width=200
 local image_height=200
@@ -58,8 +58,11 @@ for epochs=0, MaxEpoch do
 			--image.save(filename,tensor)
 			tensor.libjpeg.save(filename,tensor,1,75)
 		end
+		xlua.progress(numBatch, nbBatch)
         end
 end
+
+nbBatch=math.floor(#test_list.data/BatchSize)+1
 
 for numBatch=1, nbBatch do
         testData=getBatch(test_list, BatchSize,image_width,image_height,numBatch-1,'TRAIN')

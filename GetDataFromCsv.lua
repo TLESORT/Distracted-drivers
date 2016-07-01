@@ -1,3 +1,5 @@
+
+
 function ParseCSVLine (line,sep) 
 	local res = {}
 	local pos = 1
@@ -40,14 +42,15 @@ end
 
 function list_contains(list,objet)
 	for i=1,#list do
-		if list[i]==objet then return true end
+		if list[i]==objet then
+			 return true
+		 end
 	end
 	return false
 end 
 
 function file_exists(name)
-   local f=io.open(name,"r")
-   if f~=nil then io.close(f) return true else return false end
+	return os.rename(name, name)
 end
 
 function GetTestAndTrain(csv,Trainpath, RelativeSize, Testpath)
@@ -102,8 +105,8 @@ function GetTestAndTrain(csv,Trainpath, RelativeSize, Testpath)
 		end
 	else
 		-- this case is when we use preprocessed data
-		-- in this case Train and test are already separated because they don't have the same preprocessing
-		for i=1, #list.file do
+		-- in this case Train and test are already separated because they don't have the same preprocessing	
+	for i=1, #list.file do
 			name=Trainpath..list.label[i].."/"..list.file[i]
 			--if the file exist in the training directory then it is a training example
 			if file_exists(name) then 
