@@ -26,28 +26,31 @@ local image_width=200
 local image_height=200
 local nbBatch=math.floor(#train_list.data/BatchSize)+1
 
-        for epochs=0, MaxEpoch do
-                for numBatch=1, nbBatch do
-                        trainData=getBatch(train_list, BatchSize,image_width,image_height,numBatch-1,'TRAIN')
-			for i=1, BatchSize do
-				local filename="/home/lesort/TrainTorch/Kaggle/PrepocessedData/Train/Epoch"..epochs.."/"
-				local folderName=trainData.label[i]+1
-				local name=(numBatch*BatchSize+i)
-				filename=filename.."c"..folderName.."/"..name..".jpg"
-				 image.save(filename,trainData.data[i])
-			end
-                end
-	end
+for epochs=0, MaxEpoch do
+        for numBatch=1, nbBatch do
+                trainData=getBatch(train_list, BatchSize,image_width,image_height,numBatch-1,'TRAIN')
 
-                for numBatch=1, nbBatch do
-                        testData=getBatch(test_list, BatchSize,image_width,image_height,numBatch-1,'TRAIN')
-                        for i=1, BatchSize do
-                                local filename="/home/lesort/TrainTorch/Kaggle/PrepocessedData/Test/"
-                                local folderName=testData.label[i]+1
-                                local name=(numBatch*BatchSize+i)
-                                filename=filename.."c"..folderName.."/"..name..".jpg"
+		local indice=0
+		if (numBatch)*lenght>=#train_list.data then
+			indice=#train_list.data-lenght
+		else
+			indice=lenght*numBatch
+		end	
 
-			         image.save(filename,testData.data[i])
-                        end
-                end
+		for i=1, BatchSize do
+			local newFolder="PrepocessedData/Train/Epoch"..epochs.."/"
+			local filename= string.gsub((numBatch*BatchSize+i), "imgs/train/", newFolder)
+			image.save(filename,trainData.data[i])
+		end
+        end
+end
+
+for numBatch=1, nbBatch do
+        testData=getBatch(test_list, BatchSize,image_width,image_height,numBatch-1,'TRAIN')
+        for i=1, BatchSize do
+		local newFolder="PrepocessedData/Test/"
+		local filename= string.gsub((numBatch*BatchSize+i), "imgs/train/", newFolder)
+	        image.save(filename,testData.data[i])
+        end
+end
 
