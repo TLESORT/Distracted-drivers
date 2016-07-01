@@ -26,31 +26,57 @@ local image_width=200
 local image_height=200
 local nbBatch=math.floor(#train_list.data/BatchSize)+1
 
+local function clampImage(tensor)
+   if tensor:type() == 'torch.ByteTensor' then
+      return tensor
+   end
+   local a = torch.Tensor():resize(tensor:size()):copy(tensor)
+   a.image.saturate(a) -- bound btwn 0 and 1
+   a:mul(255)          -- remap to [0..255]
+   return a
+end
+
+
 for epochs=0, MaxEpoch do
         for numBatch=1, nbBatch do
                 trainData=getBatch(train_list, BatchSize,image_width,image_height,numBatch-1,'TRAIN')
 
 		local indice=0
-		if (numBatch)*lenght>=#train_list.data then
-			indice=#train_list.data-lenght
+		if (numBatch)*BatchSize>=#train_list.data then
+			indice=#train_list.data-BatchSize
 		else
-			indice=lenght*numBatch
+			indice=BatchSize*numBatch
 		end	
 
 		for i=1, BatchSize do
-			local newFolder="PrepocessedData/Train/Epoch"..epochs.."/"
-			local filename= string.gsub((numBatch*BatchSize+i), "imgs/train/", newFolder)
-			image.save(filename,trainData.data[i])
+			local newFolder="PreprocessedData/Train/epoch"..epochs.."/"
+			local filename= string.gsub(train_list.data[indice+i], "imgs/train/", newFolder)
+			--im=image.compressJPG(trainData.data[i])
+			--print(im:size())
+			--image.display(trainData.data[i])
+			tensor= clampImage(trainData.data[i])
+			--image.save(filename,tensor)
+			tensor.libjpeg.save(filename,tensor,1,75)
 		end
         end
 end
 
 for numBatch=1, nbBatch do
         testData=getBatch(test_list, BatchSize,image_width,image_height,numBatch-1,'TRAIN')
-        for i=1, BatchSize do
-		local newFolder="PrepocessedData/Test/"
-		local filename= string.gsub((numBatch*BatchSize+i), "imgs/train/", newFolder)
-	        image.save(filename,testData.data[i])
+ 
+       if (numBatch)*BatchSize>=#test_list.data then
+              indice=#test_list.data-BatchSize
+        else
+              indice=BatchSize*numBatch
+        end
+
+	for i=1, BatchSize do
+		local newFolder="PreprocessedData/Test/"
+		local filename= string.gsub(test_list.data[indice+i], "imgs/train/", newFolder)
+               tensor= clampImage(testData.data[i])
+               --image.save(filename,tensor)
+                tensor.libjpeg.save(filename,tensor,1,75)
+
         end
 end
 
