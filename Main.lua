@@ -21,7 +21,7 @@ function save_model(model,path)
 	torch.save(path,model)
 end
 
-function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_height, criterion, Timnet, LR, MaxEpoch)
+function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_height, criterion, Timnet, LR, MaxEpoch, usePreprocessedData)
 	
 	local list_error_train={}
 	local list_error_test={}
@@ -37,7 +37,7 @@ function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_
 		print(" Epochs :  "..epochs.. " - time : "..os.date("%X"))
 		for numBatch=1, nbBatch do	
 			-- Data ---------------------------------------------------------------
-			trainData=getBatch(train_list, BatchSize,image_width,image_height,numBatch-1,'TRAIN')
+			trainData=getBatch(train_list, BatchSize,image_width,image_height,numBatch-1,'TRAIN', usePreprocessedData)
 			trainData.data=trainData.data:cuda()
 			trainData.label=trainData.label:cuda()
 			--image.display(trainData.data)
@@ -80,11 +80,14 @@ local LR=0.01
 local MaxEpoch=15
 local classes={"c0","c1","c2","c3","c4","c5","c6","c7","c8","c9"}
 local datapath="/home/lesort/TrainTorch/Kaggle/imgs/train/"
+local PPdatapath="/home/lesort/TrainTorch/Kaggle/PrepocessedData/Train/epoch"
+local TestPPdatapath="/home/lesort/TrainTorch/Kaggle/PrepocessedData/Test"
 local BatchSize=5
 local image_width=200
 local image_height=200
 local save_name='./Save/Savemodele28.t7'
 local reload=false
+local usePreprocessedData=true
 
 --!--local MaxBatch=1
 --!--local Testsize=1000
@@ -112,13 +115,20 @@ criterion = criterion:cuda()
 
 --local trainList, testList= GetImageTrainAndTestList(datapath, classes, 80)
 local csv="/home/lesort/TrainTorch/Kaggle/driver_imgs_list.csv"
-local trainList, testList=GetTestAndTrain(csv,datapath, 80)
+
+local trainList={}
+local testList={}
+if usePreprocessedData then
+	trainList, testList=GetTestAndTrain(csv,PPdatapath.."0", 80,TestPPdatapath )
+else
+	trainList, testList=GetTestAndTrain(csv,datapath, 80)
+end
 
 trainList=shuffleDataList(trainList)
 testList=shuffleDataList(testList)
 
 -- Epoch Training -------------------------------------------------------
-train_epochs(trainList, testList, BatchSize,classes,image_width,image_height, criterion, Timnet, LR, MaxEpoch)
+train_epochs(trainList, testList, BatchSize,classes,image_width,image_height, criterion, Timnet, LR, MaxEpoch,usePreprocessedData)
 
 --error_train, loss_train=print_performance(trainList, BatchSize , 					Timnet,criterion, classes, image_width, image_height,"TRAIN")
 

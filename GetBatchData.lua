@@ -184,12 +184,16 @@ function Batch(im_list, lenght, image_width, image_height, indice, Type)
 	return struct
 end
 
-function getBatch(im_list, lenght, image_width, image_height, indice, Type)
+function getBatch(im_list, lenght, image_width, image_height, indice, Type,usePreprocessedData)
 	local batch=Batch(im_list, lenght, image_width, image_height, indice, Type)
-	if Type=='TRAIN' then 
-		batch=DataAugmentation(batch,lenght,image_width,image_height, 10, 0.1, 1)
+	if not usePreprocessedData then
+		if Type=='TRAIN' then 
+			batch=DataAugmentation(batch,lenght,image_width,image_height, 10, 0.1, 1)
+		end
+		batch=PreTraitement(batch,lenght)
 	end
-	return PreTraitement(batch,lenght)
+	
+	return batch
 end
 
 function getRandomData(im_list,lenght, im_width, im_height,Type)

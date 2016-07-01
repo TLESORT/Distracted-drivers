@@ -45,11 +45,15 @@ function list_contains(list,objet)
 	return false
 end 
 
-function GetTestAndTrain(csv,path, RelativeSize)
+function file_exists(name)
+   local f=io.open(name,"r")
+   if f~=nil then io.close(f) return true else return false end
+end
+
+function GetTestAndTrain(csv,Trainpath, RelativeSize, Testpath)
 	local csv=csv or "/home/lesort/TrainTorch/Kaggle/driver_imgs_list.csv"
 	local RelativeSize=RelativeSize or 80
-	local path= path or "/home/lesort/TrainTorch/Kaggle/imgs/train/"
-	
+	local Testpath=Testpath or Trainpath
 	local fp = assert(io.open (csv))
 	local line=fp:read()
 	local headers=ParseCSVLine(line,",")
@@ -72,27 +76,46 @@ function GetTestAndTrain(csv,path, RelativeSize)
 	local train_list={data={},label={}}
 	local subject_train={}
 	local subject_test={}
+	if Trainpath == Testpath then
+		for i=1, #list.sujet do
+			if not (list_contains(subject_train,list.sujet[i]) or list_contains(subject_test,list.sujet[i])) then
 
-	for i=1, #list.sujet do
-		if not (list_contains(subject_train,list.sujet[i]) or list_contains(subject_test,list.sujet[i])) then
-
-			-- we choose which Subject go in train and which in test
-			if math.random(1, 100)<RelativeSize then
-				table.insert(subject_train,list.sujet[i])
+				-- we choose which Subject go in train and which in test
+				if math.random(1, 100)<RelativeSize then
+					table.insert(subject_train,list.sujet[i])
+				else
+					table.insert(subject_test,list.sujet[i])
+				end
 			else
-				table.insert(subject_test,list.sujet[i])
+				if list_contains(subject_train,list.sujet[i]) then
+					path_file=Trainpath..list.label[i].."/"..list.file[i]
+					table.insert(train_list.data,path_file)
+					classe = tonumber(string.sub(list.label[i], 2))+1
+					table.insert(train_list.label,classe)
+				else
+					path_file=Testpath..list.label[i].."/"..list.file[i]
+					table.insert(test_list.data,path_file)
+					classe = tonumber(string.sub(list.label[i], 2))+1
+					table.insert(test_list.label,classe)
+				end
 			end
-		else
-			if list_contains(subject_train,list.sujet[i]) then
-				path_file=path..list.label[i].."/"..list.file[i]
-				table.insert(train_list.data,path_file)
+		end
+	else
+		-- this case is when we use preprocessed data
+		-- in this case Train and test are already separated because they don't have the same preprocessing
+		for i=1, #list.file do
+			name=Trainpath..list.label[i].."/"..list.file[i]
+			--if the file exist in the training directory then it is a training example
+			if file_exists(name) then 
+				table.insert(train_list.data,name)
 				classe = tonumber(string.sub(list.label[i], 2))+1
 				table.insert(train_list.label,classe)
 			else
-				path_file=path..list.label[i].."/"..list.file[i]
+				-- if the ile isn't in the train directory then it is a test example
+				name=Testpath..list.label[i].."/"..list.file[i]
 				table.insert(test_list.data,path_file)
 				classe = tonumber(string.sub(list.label[i], 2))+1
-				table.insert(test_list.label,classe)
+				table.insert(test_list.label,name)
 			end
 		end
 	end
