@@ -171,13 +171,11 @@ function Batch(im_list, lenght, image_width, image_height, indice, Type)
 		print("indice too big : some images will be seen 2 times for this epoch")
 		start=#im_list.data-lenght
 	else
-		start=lenght*indice+1
+		start=lenght*indice
 	end
-	--print("start : "..start)
 	for i = 1, lenght do
 		img = image.load(im_list.data[start+i],3,'byte')
 		img_rsz=image.scale(img,image_width.."x"..image_height)
-		--img_yuv=image.rgb2yuv(img_rsz)
 		struct.data[i]=img_rsz
 		struct.label[i]=im_list.label[start+i]
 	end
@@ -309,6 +307,7 @@ function randomPixelKillAndNoise(im,width,height, chance)
 	for c in ipairs(channels) do
 		for i=1,height do
 			for j=1, width do
+				
 				if math.random(0, 100)<chance then
 					im[{ {c},i,j}]=math.random(0,255)
 				end

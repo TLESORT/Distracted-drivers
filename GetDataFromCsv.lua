@@ -116,13 +116,12 @@ function GetTestAndTrain(csv,Trainpath, RelativeSize, Testpath)
 			else
 				-- if the ile isn't in the train directory then it is a test example
 				name=Testpath..list.label[i].."/"..list.file[i]
-				table.insert(test_list.data,path_file)
+				table.insert(test_list.data,name)
 				classe = tonumber(string.sub(list.label[i], 2))+1
-				table.insert(test_list.label,name)
+				table.insert(test_list.label,classe)
 			end
 		end
 	end
-
 	return train_list, test_list
 end
 

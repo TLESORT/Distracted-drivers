@@ -33,17 +33,18 @@ function count_error(truth, prediction,class_Accuracy)
 end
 
 
-function print_performance(im_list, Batchsize, net, criterion, classes, image_width, image_height,Type)
+function print_performance(im_list, Batchsize, net, criterion, classes, image_width, image_height,Type, usePreprocessedData)
 	local correct = 0
 	local nbBatch=math.floor(#im_list.label/Batchsize)+1
 	local class_Accuracy = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	local class_tot = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	local errors_tot=0
 	local loss_tot=0
-
+	nbBatch=1
 	print("Performance : "..nbBatch.. " Test Batchs - time : "..os.date("%X"))
 	for i=1, nbBatch do
-	    local Data=getBatch(im_list, Batchsize, image_width, image_height, i-1, Type)
+	    print("test"..#im_list.label)
+	    local Data=getBatch(im_list, Batchsize, image_width, image_height, i-1, Type, usePreprocessedData)
 	    Data.data= Data.data:cuda()
 	    Data.label= Data.label:cuda()
 	    local groundtruth = Data.label
