@@ -33,15 +33,8 @@ function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_
 	local csv="/home/lesort/TrainTorch/Kaggle/driver_imgs_list.csv"
 	local PPdatapath="/home/lesort/TrainTorch/Kaggle/PreprocessedData/Train/epoch"
 	local TestPPdatapath="/home/lesort/TrainTorch/Kaggle/PreprocessedData/Test/"
-
-	MaxEpoch=5
-	nbBatch=2 
 	
 	for epochs=0, MaxEpoch do
-		
-		--!--train_list, test_list=GetTestAndTrain(csv,PPdatapath..epochs.."/", 80,TestPPdatapath )
-		--!--train_list=shuffleDataList(train_list)
-		--!--test_list=shuffleDataList(test_list)
 		Timnet:training()
 		print(" Epochs :  "..epochs.. " - time : "..os.date("%X"))
 		for numBatch=1, nbBatch do	
@@ -51,7 +44,6 @@ function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_
 			trainData.label=trainData.label:cuda()
 			--image.display(trainData.data)
 			local predictions=Timnet:forward(trainData.data)
-			print(predictions:size())
 			local loss=criterion:forward(predictions, trainData.label)
 			-----------------------------------------------------------------------
 			--!--print('loss '.. loss .." batch : "..numBatch.."\n")
@@ -62,14 +54,15 @@ function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_
 
 			xlua.progress(numBatch, nbBatch)
 		end 
-		save_model(Timnet,"./Save/Savemodele1.t7")
+		save_model(Timnet,"./Save/Savemodele08_07.t7")
 		--Testing
+		Timnet:evaluate()
 		error_train, loss_train=print_performance(train_list, BatchSize , 					Timnet,criterion, classes, image_width, image_height,'TRAIN', usePreprocessedData)
 		error_test, loss_test=print_performance(test_list, BatchSize , Timnet,criterion, 						classes, image_width, image_height,'VALID', usePreprocessedData)
 
 		if loss_test<best_loss then
 			best_loss=loss_test
-			save_model(Timnet,"./Save/Savemodele28_best.t7")
+			save_model(Timnet,"./Save/Savemodele08_07_best.t7")
 		end
 
 
@@ -92,12 +85,12 @@ local classes={"c0","c1","c2","c3","c4","c5","c6","c7","c8","c9"}
 local datapath="/home/lesort/TrainTorch/Kaggle/imgs/train/"
 local PPdatapath="/home/lesort/TrainTorch/Kaggle/PreprocessedData/Train/epoch"
 local TestPPdatapath="/home/lesort/TrainTorch/Kaggle/PreprocessedData/Test/"
-local BatchSize=2  ---------------------!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!--------------------
+local BatchSize=3
 local image_width=200
 local image_height=200
-local save_name='./Save/Savemodele05_07.t7'
+local save_name='./Save/Savemodele08_07.t7'
 local reload=false
-local usePreprocessedData=false
+local usePreprocessedData=true
 
 --!--local MaxBatch=1
 --!--local Testsize=1000
@@ -142,5 +135,4 @@ testList=shuffleDataList(testList)
 -- Epoch Training -------------------------------------------------------
 train_epochs(trainList, testList, BatchSize,classes,image_width,image_height, criterion, Timnet, LR, MaxEpoch,usePreprocessedData)
 
---error_train, loss_train=print_performance(trainList, BatchSize , 					Timnet,criterion, classes, image_width, image_height,"TRAIN")
 

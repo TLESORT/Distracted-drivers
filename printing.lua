@@ -1,8 +1,8 @@
 function show_figure(list_error_train,list_error_test,list_loss_train,list_loss_test)
 
 	-- log results to files
-	accLogger = optim.Logger('accuracy.log')
-	LossLogger = optim.Logger('Loss.log')
+	accLogger = optim.Logger('./Log/accuracy.log')
+	LossLogger = optim.Logger('.Log/Loss.log')
 
 	for i=1, #list_error_train do
 	-- update logger
@@ -40,10 +40,8 @@ function print_performance(im_list, Batchsize, net, criterion, classes, image_wi
 	local class_tot = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	local errors_tot=0
 	local loss_tot=0
-	nbBatch=1
 	print("Performance : "..nbBatch.. " Test Batchs - time : "..os.date("%X"))
 	for i=1, nbBatch do
-	    print("test"..#im_list.label)
 	    local Data=getBatch(im_list, Batchsize, image_width, image_height, i-1, Type, usePreprocessedData)
 	    Data.data= Data.data:cuda()
 	    Data.label= Data.label:cuda()
