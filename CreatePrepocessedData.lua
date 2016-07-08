@@ -44,14 +44,14 @@ for epochs=0, MaxEpoch do
         for numBatch=1, nbBatch do
                 trainData=getBatch(train_list,BatchSize,image_width,image_height,numBatch-1,'TRAIN',false)
 		local indice=0
-		if (numBatch)*BatchSize>=#train_list.data then
+		if (numBatch+1)*BatchSize>=#train_list.data then
 			indice=#train_list.data-BatchSize
 		else
 			indice=BatchSize*numBatch
 		end	
 		for i=1, BatchSize do
 			local newFolder="PreprocessedData/Train/epoch"..epochs.."/"
-			local filename= string.gsub(train_list.data[indice+i], "imgs/train/", newFolder)
+			local filename= string.gsub(train_list.data[indice+i],"imgs/train/", newFolder)
 			tensor= clampImage(trainData.data[i])
 			image.save(filename,tensor)
 		end
@@ -63,7 +63,7 @@ nbBatch=math.floor(#test_list.data/BatchSize)+1
 for numBatch=1, nbBatch do
         testData=getBatch(test_list, BatchSize,image_width,image_height,numBatch-1,'VALID', false)
  
-       if (numBatch)*BatchSize>=#test_list.data then
+       if (numBatch+1)*BatchSize>=#test_list.data then
               indice=#test_list.data-BatchSize
         else
               indice=BatchSize*numBatch

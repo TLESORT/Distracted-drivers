@@ -30,10 +30,19 @@ function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_
 	local nbBatch=math.floor(#train_list.data/BatchSize)+1
 	local timer = torch.Timer()
 	local best_loss =100000
+	local csv="/home/lesort/TrainTorch/Kaggle/driver_imgs_list.csv"
+	local PPdatapath="/home/lesort/TrainTorch/Kaggle/PreprocessedData/Train/epoch"
+	local TestPPdatapath="/home/lesort/TrainTorch/Kaggle/PreprocessedData/Test/"
 
-	--MaxEpoch=1
-	--nbBatch=1
+	MaxEpoch=5
+	nbBatch=2 
+	
 	for epochs=0, MaxEpoch do
+		
+		--!--train_list, test_list=GetTestAndTrain(csv,PPdatapath..epochs.."/", 80,TestPPdatapath )
+		--!--train_list=shuffleDataList(train_list)
+		--!--test_list=shuffleDataList(test_list)
+		Timnet:training()
 		print(" Epochs :  "..epochs.. " - time : "..os.date("%X"))
 		for numBatch=1, nbBatch do	
 			-- Data ---------------------------------------------------------------
@@ -42,23 +51,24 @@ function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_
 			trainData.label=trainData.label:cuda()
 			--image.display(trainData.data)
 			local predictions=Timnet:forward(trainData.data)
+			print(predictions:size())
 			local loss=criterion:forward(predictions, trainData.label)
 			-----------------------------------------------------------------------
 			--!--print('loss '.. loss .." batch : "..numBatch.."\n")
 			-- Stochastique Gradient Descent
 			Timnet:zeroGradParameters()
-			local visu=criterion:backward(Timnet.output, trainData.label)
-			Timnet:backward(trainData.data, visu)
+			Timnet:backward(trainData.data,criterion:backward(Timnet.output, trainData.label) )
 			Timnet:updateParameters(LR)
 
 			xlua.progress(numBatch, nbBatch)
 		end 
 		save_model(Timnet,"./Save/Savemodele1.t7")
 		--Testing
-		error_train, loss_train=print_performance(train_list, BatchSize , 					Timnet,criterion, classes, image_width, image_height,"TRAIN")
-		error_test, loss_test=print_performance(test_list, BatchSize , Timnet,criterion, 						classes, image_width, image_height,"VALID")
+		error_train, loss_train=print_performance(train_list, BatchSize , 					Timnet,criterion, classes, image_width, image_height,'TRAIN', usePreprocessedData)
+		error_test, loss_test=print_performance(test_list, BatchSize , Timnet,criterion, 						classes, image_width, image_height,'VALID', usePreprocessedData)
 
 		if loss_test<best_loss then
+			best_loss=loss_test
 			save_model(Timnet,"./Save/Savemodele28_best.t7")
 		end
 
@@ -82,10 +92,10 @@ local classes={"c0","c1","c2","c3","c4","c5","c6","c7","c8","c9"}
 local datapath="/home/lesort/TrainTorch/Kaggle/imgs/train/"
 local PPdatapath="/home/lesort/TrainTorch/Kaggle/PreprocessedData/Train/epoch"
 local TestPPdatapath="/home/lesort/TrainTorch/Kaggle/PreprocessedData/Test/"
-local BatchSize=5
+local BatchSize=2  ---------------------!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!--------------------
 local image_width=200
 local image_height=200
-local save_name='./Save/Savemodele28.t7'
+local save_name='./Save/Savemodele05_07.t7'
 local reload=false
 local usePreprocessedData=false
 
@@ -97,14 +107,16 @@ if reload==true then
 	Timnet = torch.load(save_name):double()
 	print('Timnet\n' .. Timnet:__tostring());
 else
-	modele_file='./models/mini_model'
+	modele_file='./models/nin'
 	print("------------------------------------------------------------------------------")
 	print("------------------------------------------------------------------------------")
 	print("-----------------------------"..modele_file.."--------------------------------")
 	print("------------------------------------------------------------------------------")
 	print("------------------------------------------------------------------------------")
 	require(modele_file)
-	Timnet = getNet(image_width,image_height)
+
+	Timnet = nn.Sequential()
+	Timnet:add(GetModel(image_width,image_height))
 end
 
 collectgarbage()
