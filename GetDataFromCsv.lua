@@ -113,12 +113,14 @@ function GetTestAndTrain(csv,Trainpath, RelativeSize, Testpath)
 				table.insert(train_list.data,name)
 				classe = tonumber(string.sub(list.label[i], 2))+1
 				table.insert(train_list.label,classe)
-			else
+			elseif file_exists(Testpath..list.label[i].."/"..list.file[i]) then 
 				-- if the ile isn't in the train directory then it is a test example
 				name=Testpath..list.label[i].."/"..list.file[i]
 				table.insert(test_list.data,name)
 				classe = tonumber(string.sub(list.label[i], 2))+1
 				table.insert(test_list.label,classe)
+			else
+				print(list.file[i].." don't exist either in train or test path")
 			end
 		end
 	end
