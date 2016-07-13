@@ -38,10 +38,6 @@ end
 -- Output : A batch of 'lenght' files which correspond to the indice given with their label ('c0'->1, 'c1'->2 ...) selected inside the list suitable for training or testing
 ---------------------------------------------------------------------------------------
 function Batch(im_list, lenght, image_width, image_height, indice, Type)
-	local Type=Type or 'TRAIN'
-	local image_width= image_width or 100
-	local image_height= image_height or 100
-	local indice=indice or 0
 
 	-- create train set structure:
 	trainData = {
@@ -93,9 +89,9 @@ function getBatch(im_list, lenght, image_width, image_height, indice, Type,usePr
 	local batch=Batch(im_list, lenght, image_width, image_height, indice, Type)
 	if not usePreprocessedData then
 		if Type=='TRAIN' then 
-			batch=DataAugmentation(batch,lenght,image_width,image_height, 10, 0.1, 1)
+			batch=DataAugmentation(batch, 10, 0.1, 1)
 		end
-		batch=PreTraitement(batch,lenght)
+		batch=PreTraitement(batch)
 	end
 	
 	return batch
@@ -127,8 +123,10 @@ end
 -- Output : A batch with a mean and a 1 variance for each channel
 ---------------------------------------------------------------------------------------
 
-function PreTraitement(batch,lenght)
+function PreTraitement(batch)
 	-- Name channels for convenience
+	local lenght=batch.data:size()[1]
+	print("len"..lenght)
 	local channels = {'y','u','v'}
 
 	-- Normalize each channel, and store mean/std
@@ -168,26 +166,24 @@ function PreTraitement(batch,lenght)
 	return batch
 end
 ---------------------------------------------------------------------------------------
--- Function : DataAugmentation(batch,lenght,height,width, angle, shift, chance)
+-- Function : DataAugmentation(batch, angle, shift, chance)
 -- Input (batch) : Batch of images
--- Input (lenght): lenght of the batch
--- Input (width): width of images
--- Input (height) : height of images
 -- Input (Angle) : max angle of random rotation in degre
 -- Input (shift) : max shift applied for the random translatation
 -- Input (chance): Chance for each pixel for being reamplaced by a random other
 -- Output : A batch with new images slightly modified for regularization
 ---------------------------------------------------------------------------------------
-function DataAugmentation(batch,lenght,width,height, angle, shift, chance)
+function DataAugmentation(batch, angle, shift, chance)
+	local lenght=batch.data:size()[1]
 	for i = 1,lenght do
 		-- random rotation between angle and -angle
 		angle=(math.random(0,2*angle)-angle)*math.pi/180
-		batch.data[{ i,{},{},{} }] =  image.rotate(batch.data[{ i,{},{},{} }], angle)
+		batch.data[{ i,{},{},{} }] =  image.rotate(batch.data[{i,{},{},{}}], angle)
 		-- random translation between shift and -shift
 		dx=math.random(0,2*shift)-shift
 		dy=math.random(0,2*shift)-shift
 		batch.data[{ i,{},{},{} }] = image.translate(batch.data[{ i,{},{},{} }], dx, dy)
-		--batch.data[{ i,{},{},{} }] = randomPixelKillAndNoise(batch.data[{ i,{},{},{} }],width,height, chance)
+		batch.data[{ i,{},{},{} }] = randomPixelKillAndNoise(batch.data[{ i,{},{},{} }], chance)
 	end
 	return batch
 end
@@ -200,7 +196,9 @@ end
 -- Input (chance): Chance for each pixel for being reamplaced by a random other (1 for 1% chance to be killed)
 -- Output : A batch with random pixels killed
 ---------------------------------------------------------------------------------------
-function randomPixelKillAndNoise(im,width,height, chance)
+function randomPixelKillAndNoise(im, chance)
+	local width=im:size()[2]
+	local height=im:size()[3]
 	local channels = {'y','u','v'}
 	Noise=torch.floor(torch.rand(3,200,200)*10-5)
 	im=im+Noise

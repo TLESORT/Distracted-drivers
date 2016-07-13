@@ -92,8 +92,14 @@ local image_height=200
 save_name='./Save/Savemodele08_07.t7'
 local reload=true
 local usePreprocessedData=false
+local multiGPU=true
 
 ------------------------------------------------------------------------------
+
+if multiGPU then
+	-- 2 GPU from my side but you could have more
+	cutorch.setDevice(2) 
+end
 
 if reload==true then
 	Timnet = torch.load(save_name):double()
