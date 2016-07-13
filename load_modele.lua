@@ -12,7 +12,7 @@ require 'GetBatchData'
 --net = torch.load('model-test.t7'):double()
 net = torch.load('model.t7'):double()
 
-datapath="/home/lesort/TrainTorch/Kaggle/imgs/train/"
+datapath=paths.home.."/Kaggle/imgs/train/"
 local classes0={"c2"}
 trainList, testList=GetImageTrainAndTestList(datapath, classes0, 100)
 

@@ -12,12 +12,13 @@ require 'GetDataFromCsv'
 
 
 local classes={"c0","c1","c2","c3","c4","c5","c6","c7","c8","c9"}
-local datapath="/home/lesort/TrainTorch/Kaggle/imgs/train/"
-local PPdatapath="/home/lesort/TrainTorch/Kaggle/PreprocessedData/Train/epoch0/"
-local TestPPdatapath="/home/lesort/TrainTorch/Kaggle/PreprocessedData/Test/"
-local csv="/home/lesort/TrainTorch/Kaggle/driver_imgs_list.csv"
+local home=paths.home
+local datapath=home.."/Kaggle/imgs/train/"
+local PPdatapath="/home/timothee/Kaggle/PreprocessedData/Train/epoch0/"
+local TestPPdatapath=home.."/Kaggle/PreprocessedData/Test/"
+local csv=home.."/Kaggle/driver_imgs_list.csv"
 
-local newList = false
+local newList = true
 
 if newList then
 	train_list, test_list=GetTestAndTrain(csv,datapath, 80)
@@ -43,10 +44,9 @@ local function clampImage(tensor)
    return a
 end
 
---[[
 for epochs=0, MaxEpoch do
-        for numBatch=1, nbBatch do
-                trainData=getBatch(train_list,BatchSize,image_width,image_height,numBatch-1,'TRAIN',false)
+        for numBatch=0, nbBatch-1 do
+                trainData=getBatch(train_list,BatchSize,image_width,image_height,numBatch,'TRAIN',false)
 		local indice=0
 		if (numBatch+1)*BatchSize>=#train_list.data then
 			indice=#train_list.data-BatchSize
@@ -62,17 +62,17 @@ for epochs=0, MaxEpoch do
 		xlua.progress(numBatch, nbBatch)
         end
 end
---]]
+
 
 nbBatch=math.floor(#test_list.data/BatchSize)+1
-for numBatch=1, nbBatch do
-        testData=getBatch(test_list, BatchSize,image_width,image_height,numBatch-1,'VALID', false)
+for numBatch=0, nbBatch-1 do
+        testData=getBatch(test_list, BatchSize,image_width,image_height,numBatch,'VALID', false)
  
        if (numBatch+1)*BatchSize>=#test_list.data then
               indice=#test_list.data-BatchSize
-        else
+       else
               indice=BatchSize*numBatch
-        end
+       end
 
 	for i=1, BatchSize do
 		local newFolder="PreprocessedData/Test/"
@@ -83,6 +83,5 @@ for numBatch=1, nbBatch do
                 image.save(filename,tensor)
 
         end
-	xlua.progress(numBatch, nbBatch)
+	--xlua.progress(numBatch, nbBatch)
 end
-

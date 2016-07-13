@@ -11,7 +11,7 @@ require 'csvigo'
 require 'GetBatchData'
 
 function getfile()
-	path="/home/lesort/TrainTorch/Kaggle/imgs/test/"
+	path=paths.home.."/Kaggle/imgs/test/"
 	local pathlist={}
 	local filelist={}
 	for file in paths.files(path) do

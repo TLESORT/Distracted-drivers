@@ -35,6 +35,8 @@ function GetModel()
 	model:add(nn.Dropout())
 	model:add(nn.View(10*1849))
 	model:add(nn.Linear(10*1849, 10))
+	model:add(nn.LogSoftMax())   
+
 	for k,v in pairs(model:findModules(('%s.SpatialConvolution'):format(backend_name))) do
 	  v.weight:normal(0,0.05)
 	  v.bias:zero()

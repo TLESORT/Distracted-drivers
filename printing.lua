@@ -22,10 +22,8 @@ function count_error(truth, prediction,class_Accuracy)
 	maxs, indices = torch.max(prediction,2)
 	for i=1,truth:size(1) do
 	    if truth[i] ~= indices[i][1] then
-		--print(truth[i].." vs "..indices[i][1])
 		errors = errors + 1
 	    else
-		--print(truth[i].." = "..indices[i][1])
 		class_Accuracy[truth[i]] = class_Accuracy[truth[i]] + 1
 	    end
 	end
@@ -40,6 +38,7 @@ function print_performance(im_list, Batchsize, net, criterion, classes, image_wi
 	local class_tot = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	local errors_tot=0
 	local loss_tot=0
+
 	print("Performance : "..nbBatch.. " Test Batchs - time : "..os.date("%X"))
 	for i=1, nbBatch do
 	    local Data=getBatch(im_list, Batchsize, image_width, image_height, i-1, Type, usePreprocessedData)

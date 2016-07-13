@@ -1,5 +1,10 @@
 
-
+---------------------------------------------------------------------------------------
+-- Function : ParseCSVLine (line,sep)
+-- Input (line): line to parse
+-- Input (sep) : seprator between two data "," for "example
+-- Output : list of the data contained in the csv line
+---------------------------------------------------------------------------------------
 function ParseCSVLine (line,sep) 
 	local res = {}
 	local pos = 1
@@ -40,6 +45,13 @@ function ParseCSVLine (line,sep)
 	return res
 end
 
+
+---------------------------------------------------------------------------------------
+-- Function : list_contains(list,objet)
+-- Input (list): list of objects
+-- Input (objet) : object to find in the list
+-- Output : true if the object is in the list false otherwise
+---------------------------------------------------------------------------------------
 function list_contains(list,objet)
 	for i=1,#list do
 		if list[i]==objet then
@@ -49,12 +61,25 @@ function list_contains(list,objet)
 	return false
 end 
 
+---------------------------------------------------------------------------------------
+-- Function : file_exists(name)
+-- Input (name): complete path of a file
+-- Output : true if the file exist, false otherwise
+---------------------------------------------------------------------------------------
+
 function file_exists(name)
 	return os.rename(name, name)
 end
 
+---------------------------------------------------------------------------------------
+-- Function : GetTestAndTrain(csv,Trainpath, RelativeSize, Testpath)
+-- Input (csv): file path where the data paths is
+-- Input (Trainpath) : folder where the train data is
+-- Input (RelativeSize): relative size between train and test (ex : 80 for #train/(#train+#test)=0.8)
+-- Input (Testpath) : folder where the test data is 
+-- Output : return a list of data and label for train and test for distracterd driver kaggle competition
+---------------------------------------------------------------------------------------
 function GetTestAndTrain(csv,Trainpath, RelativeSize, Testpath)
-	local csv=csv or "/home/lesort/TrainTorch/Kaggle/driver_imgs_list.csv"
 	local RelativeSize=RelativeSize or 80
 	local Testpath=Testpath or Trainpath
 	local fp = assert(io.open (csv))
