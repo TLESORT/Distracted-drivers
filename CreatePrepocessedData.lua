@@ -18,7 +18,7 @@ local PPdatapath="/home/timothee/Kaggle/PreprocessedData/Train/epoch0/"
 local TestPPdatapath=home.."/Kaggle/PreprocessedData/Test/"
 local csv=home.."/Kaggle/driver_imgs_list.csv"
 
-local newList = true
+local newList = false
 
 if newList then
 	train_list, test_list=GetTestAndTrain(csv,datapath, 80)
@@ -29,7 +29,6 @@ local MaxEpoch=10
 local BatchSize=5
 local image_width=200
 local image_height=200
-local nbBatch=math.floor(#train_list.data/BatchSize)+1
 
 local function clampImage(tensor)
    if tensor:type() == 'torch.ByteTensor' then
@@ -44,6 +43,28 @@ local function clampImage(tensor)
    return a
 end
 
+nbBatch=math.floor(#test_list.data/BatchSize)+1
+for numBatch=0, nbBatch-1 do
+        testData=getBatch(test_list, BatchSize,image_width,image_height,numBatch,'VALID', false)
+ 
+       if (numBatch+1)*BatchSize>=#test_list.data then
+              indice=#test_list.data-BatchSize
+       else
+              indice=BatchSize*numBatch
+       end
+
+	for i=1, BatchSize do
+		local newFolder="PreprocessedData/Test/"
+		local filename= string.gsub(test_list.data[indice+i], "imgs/train/", newFolder)
+               
+		tensor= clampImage(testData.data[i])
+                image.save(filename,tensor)
+
+        end
+	xlua.progress(numBatch, nbBatch)
+end
+
+nbBatch=math.floor(#train_list.data/BatchSize)+1
 for epochs=0, MaxEpoch do
         for numBatch=0, nbBatch-1 do
                 trainData=getBatch(train_list,BatchSize,image_width,image_height,numBatch,'TRAIN',false)
@@ -61,27 +82,4 @@ for epochs=0, MaxEpoch do
 		end
 		xlua.progress(numBatch, nbBatch)
         end
-end
-
-
-nbBatch=math.floor(#test_list.data/BatchSize)+1
-for numBatch=0, nbBatch-1 do
-        testData=getBatch(test_list, BatchSize,image_width,image_height,numBatch,'VALID', false)
- 
-       if (numBatch+1)*BatchSize>=#test_list.data then
-              indice=#test_list.data-BatchSize
-       else
-              indice=BatchSize*numBatch
-       end
-
-	for i=1, BatchSize do
-		local newFolder="PreprocessedData/Test/"
-		local filename= string.gsub(test_list.data[indice+i], "imgs/train/", newFolder)
-		--image.display{image=testData.data[i], legend=filename}
-               
-		tensor= clampImage(testData.data[i])
-                image.save(filename,tensor)
-
-        end
-	--xlua.progress(numBatch, nbBatch)
 end

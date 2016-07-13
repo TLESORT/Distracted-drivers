@@ -7,7 +7,7 @@ function show_figure(list_error_train,list_error_test,list_loss_train,list_loss_
 	for i=1, #list_error_train do
 	-- update logger
 		accLogger:add{['% train accuracy'] = list_error_train[i], ['% test accuracy'] = 					list_error_test[i]}
-		LossLogger:add{['% train loss']    = list_loss_train[i], ['% test loss']    = 					list_loss_test[i]}
+		LossLogger:add{['% train loss (x100)']    = list_loss_train[i], ['% test loss (x100)']    = 					list_loss_test[i]}
 	end
 	-- plot logger
 	accLogger:style{['% train accuracy'] = '-', ['% test accuracy'] = '-'}

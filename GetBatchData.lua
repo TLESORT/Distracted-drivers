@@ -126,7 +126,6 @@ end
 function PreTraitement(batch)
 	-- Name channels for convenience
 	local lenght=batch.data:size()[1]
-	print("len"..lenght)
 	local channels = {'y','u','v'}
 
 	-- Normalize each channel, and store mean/std

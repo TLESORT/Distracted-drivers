@@ -33,6 +33,10 @@ function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_
 	local save_best=string.gsub(save_name, ".t7", "_best.t7")
 		
 	for epochs=0, MaxEpoch do
+
+		if usePreprocessedData then
+			train_list, test_list=GetTestAndTrain(csv,PPdatapath..epochs.."/", 80,TestPPdatapath)
+		end
 		Timnet:training()
 		print(" Epochs :  "..epochs.. " - time : "..os.date("%X"))
 		for numBatch=1, nbBatch do	
@@ -68,8 +72,8 @@ function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_
 
 		table.insert(list_error_train,error_train)
 		table.insert(list_error_test,error_test)
-		table.insert(list_loss_train,loss_train)
-		table.insert(list_loss_test,loss_test)
+		table.insert(list_loss_train,loss_train*100)
+		table.insert(list_loss_test,loss_test*100)
 
 		show_figure(list_error_train,list_error_test,list_loss_train,list_loss_test)
 	end
@@ -82,16 +86,16 @@ end
 local LR=0.01
 local MaxEpoch=15
 local classes={"c0","c1","c2","c3","c4","c5","c6","c7","c8","c9"}
-local home=paths.home
-local datapath=home.."/Kaggle/imgs/train/"
-local PPdatapath=home.."/Kaggle/PreprocessedData/Train/epoch"
-local TestPPdatapath=home.."/Kaggle/PreprocessedData/Test/"
+home=paths.home
+datapath=home.."/Kaggle/imgs/train/"
+PPdatapath=home.."/Kaggle/PreprocessedData/Train/epoch"
+TestPPdatapath=home.."/Kaggle/PreprocessedData/Test/"
 local BatchSize=12
 local image_width=200
 local image_height=200
-save_name='./Save/Savemodele08_07.t7'
-local reload=true
-local usePreprocessedData=false
+save_name='./Save/Savemodele13_07.t7'
+local reload=false
+local usePreprocessedData=true
 local multiGPU=true
 
 ------------------------------------------------------------------------------
@@ -128,7 +132,7 @@ local csv=home.."/Kaggle/driver_imgs_list.csv"
 local trainList={}
 local testList={}
 if usePreprocessedData then
-	trainList, testList=GetTestAndTrain(csv,PPdatapath.."0/", 80,TestPPdatapath )
+	trainList, testList=GetTestAndTrain(csv,PPdatapath.."0/", 80,TestPPdatapath)
 else
 	trainList, testList=GetTestAndTrain(csv,datapath, 80)
 end
