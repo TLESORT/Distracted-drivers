@@ -4,7 +4,7 @@ require 'nn'
 -- network-------------------------------------------------------
 function getNet(image_width,image_height)
 	nbFilter=32
-	local Drop_Out=nn.SpatialDropout(0.25)
+	local Drop_Out=nn.SpatialDropout(0.5)
 
 	Timnet = nn.Sequential()
 
@@ -14,7 +14,7 @@ function getNet(image_width,image_height)
 	Timnet:add(nn.SpatialBatchNormalization(nbFilter))
 	Timnet:add(nn.ReLU())
 	Timnet:add(nn.SpatialMaxPooling(2,2,2,2))
- 	--Timnet:add(Drop_Out)
+ 	Timnet:add(Drop_Out)
 
 	width=math.floor((image_width-2)/2)-1
 	height=math.floor((image_height-2)/2)-1
@@ -57,7 +57,6 @@ function getNet(image_width,image_height)
 	Timnet:add(nn.ReLU())                       
 	Timnet:add(nn.Linear(500, 10))                   -- 10 is the number of outputs of the network 
 	Timnet:add(nn.LogSoftMax())                     -- converts the output to a log-probability. 
-	Timnet=Timnet:cuda()
 
 	-- Initiallisation : "Understanding the difficulty of training deep feedforward neural networks"
 	local method = 'xavier'

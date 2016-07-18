@@ -1,8 +1,8 @@
-function show_figure(list_error_train,list_error_test,list_loss_train,list_loss_test)
+function show_figure(list_error_train,list_error_test,list_loss_train,list_loss_test,name)
 
 	-- log results to files
-	accLogger = optim.Logger('./Log/accuracy.log')
-	LossLogger = optim.Logger('.Log/Loss.log')
+	accLogger = optim.Logger('./Log/'..name..'accuracy.log')
+	LossLogger = optim.Logger('.Log/'..name..'Loss.log')
 
 	for i=1, #list_error_train do
 	-- update logger

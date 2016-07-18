@@ -79,12 +79,13 @@ end
 -- Input (Testpath) : folder where the test data is 
 -- Output : return a list of data and label for train and test for distracterd driver kaggle competition
 ---------------------------------------------------------------------------------------
-function GetTestAndTrain(csv,Trainpath, RelativeSize, Testpath)
+function GetTestAndTrain(csv,Trainpath, RelativeSize, datapath, ContinuePreprocessing)
 	local RelativeSize=RelativeSize or 80
-	local Testpath=Testpath or Trainpath
+	local datapath=datapath or Trainpath
 	local fp = assert(io.open (csv))
 	local line=fp:read()
 	local headers=ParseCSVLine(line,",")
+	local ContinuePreprocessing = ContinuePreprocessing or false
 
 	-- now read the next line from the file and store in a hash
 
@@ -104,7 +105,7 @@ function GetTestAndTrain(csv,Trainpath, RelativeSize, Testpath)
 	local train_list={data={},label={}}
 	local subject_train={}
 	local subject_test={}
-	if Trainpath == Testpath then
+	if Trainpath == datapath then
 		for i=1, #list.sujet do
 			if not (list_contains(subject_train,list.sujet[i]) or list_contains(subject_test,list.sujet[i])) then
 
@@ -121,31 +122,47 @@ function GetTestAndTrain(csv,Trainpath, RelativeSize, Testpath)
 					classe = tonumber(string.sub(list.label[i], 2))+1
 					table.insert(train_list.label,classe)
 				else
-					path_file=Testpath..list.label[i].."/"..list.file[i]
+					path_file=datapath..list.label[i].."/"..list.file[i]
 					table.insert(test_list.data,path_file)
 					classe = tonumber(string.sub(list.label[i], 2))+1
 					table.insert(test_list.label,classe)
 				end
 			end
 		end
-	else
-		-- this case is when we use preprocessed data
+	elseif not ContinuePreprocessing then
+		-- this case is when we use preprocessed data for training
 		-- in this case Train and test are already separated because they don't have the same preprocessing	
-	for i=1, #list.file do
-			name=Trainpath..list.label[i].."/"..list.file[i]
+		for i=1, #list.file do
+			TrainName=Trainpath..list.label[i].."/"..list.file[i]
+			TestName=datapath..list.label[i].."/"..list.file[i]
 			--if the file exist in the training directory then it is a training example
-			if file_exists(name) then 
-				table.insert(train_list.data,name)
+			if file_exists(TrainName) then 
+				table.insert(train_list.data,TrainName)
 				classe = tonumber(string.sub(list.label[i], 2))+1
 				table.insert(train_list.label,classe)
-			elseif file_exists(Testpath..list.label[i].."/"..list.file[i]) then 
+			elseif file_exists(TestName) then 
 				-- if the ile isn't in the train directory then it is a test example
-				name=Testpath..list.label[i].."/"..list.file[i]
-				table.insert(test_list.data,name)
+				table.insert(test_list.data,TestName)
 				classe = tonumber(string.sub(list.label[i], 2))+1
 				table.insert(test_list.label,classe)
 			else
-				print(list.file[i].." don't exist either in train or test path")
+				print(list.file[i].." don't exist")
+			end
+		end
+	else
+		-- this case is when we use preprocessed data from a folder to continue creation of preprocessed data in other folder
+		for i=1, #list.file do
+			TrainName=Trainpath..list.label[i].."/"..list.file[i]
+			Name=datapath..list.label[i].."/"..list.file[i]
+			--if the file exist in the training directory then it is a training example
+			if file_exists(TrainName) then 
+				table.insert(train_list.data,Name)
+				classe = tonumber(string.sub(list.label[i], 2))+1
+				table.insert(train_list.label,classe)
+			else
+				table.insert(test_list.data,Name)
+				classe = tonumber(string.sub(list.label[i], 2))+1
+				table.insert(test_list.label,classe)
 			end
 		end
 	end

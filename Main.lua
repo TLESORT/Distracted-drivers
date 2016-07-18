@@ -42,8 +42,10 @@ function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_
 		for numBatch=1, nbBatch do	
 			-- Data ---------------------------------------------------------------
 			trainData=getBatch(train_list, BatchSize,image_width,image_height,numBatch-1,'TRAIN', usePreprocessedData)
+
 			trainData.data=trainData.data:cuda()
 			trainData.label=trainData.label:cuda()
+
 			--image.display(trainData.data)
 			local predictions=Timnet:forward(trainData.data)
 			local loss=criterion:forward(predictions, trainData.label)
@@ -75,7 +77,7 @@ function train_epochs(train_list,test_list, BatchSize,classes,image_width,image_
 		table.insert(list_loss_train,loss_train*100)
 		table.insert(list_loss_test,loss_test*100)
 
-		show_figure(list_error_train,list_error_test,list_loss_train,list_loss_test)
+		show_figure(list_error_train,list_error_test,list_loss_train,list_loss_test,save_name)
 	end
 end
 
@@ -93,7 +95,7 @@ TestPPdatapath=home.."/Kaggle/PreprocessedData/Test/"
 local BatchSize=12
 local image_width=200
 local image_height=200
-save_name='./Save/Savemodele13_07.t7'
+save_name='./Save/Savemodele18_07.t7'
 local reload=false
 local usePreprocessedData=true
 local multiGPU=true
@@ -110,7 +112,7 @@ if reload==true then
 	print('Timnet\n' .. Timnet:__tostring());
 	print(save_name.." Loaded")
 else
-	modele_file='./models/nin'
+	modele_file='./models/modele_dropout'
 	print("------------------------------------------------------------------------------")
 	print("------------------------------------------------------------------------------")
 	print("-----------------------------"..modele_file.."--------------------------------")

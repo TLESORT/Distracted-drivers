@@ -87,6 +87,7 @@ end
 
 function getBatch(im_list, lenght, image_width, image_height, indice, Type,usePreprocessedData)
 	local batch=Batch(im_list, lenght, image_width, image_height, indice, Type)
+
 	if not usePreprocessedData then
 		if Type=='TRAIN' then 
 			batch=DataAugmentation(batch, 10, 0.1, 1)
@@ -155,7 +156,6 @@ function PreTraitement(batch)
 	-- Define our local normalization operator (It is an actual nn module, 
 	-- which could be inserted into a trainable model):
 	local normalization = nn.SpatialContrastiveNormalization(1, neighborhood, 1e-4)
-
 	-- Normalize all channels locally:
 	for c in ipairs(channels) do
 	   for i = 1,lenght do
@@ -183,6 +183,10 @@ function DataAugmentation(batch, angle, shift, chance)
 		dy=math.random(0,2*shift)-shift
 		batch.data[{ i,{},{},{} }] = image.translate(batch.data[{ i,{},{},{} }], dx, dy)
 		batch.data[{ i,{},{},{} }] = randomPixelKillAndNoise(batch.data[{ i,{},{},{} }], chance)
+		local flip = math.random(0,1)
+		if flip==1 then
+			batch.data[{ i,{},{},{} }]=image.hflip(batch.data[{ i,{},{},{} }])
+		end
 	end
 	return batch
 end

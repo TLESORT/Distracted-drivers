@@ -14,7 +14,7 @@ require 'GetDataFromCsv'
 local classes={"c0","c1","c2","c3","c4","c5","c6","c7","c8","c9"}
 local home=paths.home
 local datapath=home.."/Kaggle/imgs/train/"
-local PPdatapath="/home/timothee/Kaggle/PreprocessedData/Train/epoch0/"
+local PPdatapath=home.."/Kaggle/PreprocessedData/Train/epoch0/"
 local TestPPdatapath=home.."/Kaggle/PreprocessedData/Test/"
 local csv=home.."/Kaggle/driver_imgs_list.csv"
 
@@ -23,7 +23,7 @@ local newList = false
 if newList then
 	train_list, test_list=GetTestAndTrain(csv,datapath, 80)
 else
-	train_list, test_list=GetTestAndTrain(csv,PPdatapath, 80, datapath)
+	train_list, test_list=GetTestAndTrain(csv,PPdatapath, 80, datapath, true)
 end
 local MaxEpoch=10
 local BatchSize=5
