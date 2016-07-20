@@ -7,26 +7,21 @@ require 'xlua'
 require 'cutorch'
 
 require 'GetBatchData'
+require 'GetDataFromCsv'
 
 
 --net = torch.load('model-test.t7'):double()
-net = torch.load('model.t7'):double()
+net = torch.load('Save/Savemodele18_07_best.t7'):double()
 
 datapath=paths.home.."/Kaggle/imgs/train/"
-local classes0={"c2"}
-trainList, testList=GetImageTrainAndTestList(datapath, classes0, 100)
+trainList, testList=GetTestAndTrain(csv,datapath, 80)
+BatchSize=2
 
 im_width=200
 im_height=200
 lenght=1
-im_list=trainList
-testData0=getRandomData(im_list,lenght, im_width, im_height)
+testData0=getBatch(train_list, BatchSize,200,200,numBatch-1,'TRAIN', false)
 
-
-local classes1={"c8"}
-trainList, testList=GetImageTrainAndTestList(datapath, classes1, 100)
-im_list=trainList
-testData1=getRandomData(im_list,lenght, im_width, im_height)
 --[[
 correct = 0
 for i=1,testData.label:size(1) do
@@ -62,7 +57,7 @@ print(net:get(6).weight:size())
 --]]
 
 image0=PreTraitement(testData0,1)
-image.display{image=image0.data,  zoom=4, legend="image0"}
+image.display{image=image0.data[1],  zoom=4, legend="image0"}
 local prediction=net:forward(image0.data)
 maxs, indices = torch.max(prediction,1)
 print("truth = " .. testData0.label[1])

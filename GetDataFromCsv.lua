@@ -146,7 +146,7 @@ function GetTestAndTrain(csv,Trainpath, RelativeSize, datapath, ContinuePreproce
 				classe = tonumber(string.sub(list.label[i], 2))+1
 				table.insert(test_list.label,classe)
 			else
-				print(list.file[i].." don't exist")
+				--print(list.file[i].." don't exist")
 			end
 		end
 	else

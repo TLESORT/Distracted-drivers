@@ -31,9 +31,9 @@ function count_error(truth, prediction,class_Accuracy)
 end
 
 
-function print_performance(im_list, Batchsize, net, criterion, classes, image_width, image_height,Type, usePreprocessedData)
+function print_performance(im_list, Batchsize, net, criterion, classes, image_width, image_height,Type, usePreprocessedData, nbBatch)
 	local correct = 0
-	local nbBatch=math.floor(#im_list.label/Batchsize)+1
+	local nbBatch=nbBatch or (math.floor(#im_list.label/Batchsize)+1)
 	local class_Accuracy = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	local class_tot = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	local errors_tot=0
